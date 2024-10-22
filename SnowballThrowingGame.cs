@@ -27,8 +27,23 @@ class SnowballThrowingGame : LidContentInterface
         AddPlayer();
         AddControllers();
         AddInterface();
-        EnemySpawner();
+        AddTimers();
+    }
 
+    private void AddTimers()
+    {
+        Timer raiseDifficulty = new Timer(30, RaiseDifficulty);
+        raiseDifficulty.Start();
+        Timer spawnEnemies = new Timer(2, SpawnEnemies);
+        spawnEnemies.Start();
+    }
+
+    private void RaiseDifficulty()
+    {
+        if (difficulty <= 10)
+        {
+            difficulty++;
+        }
     }
 
     private void AddInterface()
@@ -48,12 +63,6 @@ class SnowballThrowingGame : LidContentInterface
         game.Add(player);
     }
 
-    private void EnemySpawner()
-    {
-        Timer timer = new Timer(2, SpawnEnemies);
-        timer.Start();
-    }
-
     private void SpawnEnemies()
     {
         int howMany = RandomGen.NextInt(difficulty + 1);
@@ -65,13 +74,14 @@ class SnowballThrowingGame : LidContentInterface
 
     private void SpawnEnemy()
     {
-        PhysicsObject go = new PhysicsObject(100, 100, Shape.Hexagon);
-        go.Position = RandomSpawnPoint();
-        go.Tag = "enemy";
-        go.Color = Color.Black;
+        PhysicsObject enemy = new PhysicsObject(100, 100, Shape.Hexagon);
+        enemy.Position = RandomSpawnPoint();
+        enemy.Tag = "enemy";
+        enemy.Color = Color.Black;
         FollowerBrain brain = new FollowerBrain(player);
         brain.Speed = 100;
-        game.Add(go);
+        enemy.Brain = brain;
+        game.Add(enemy);
     }
 
     private Vector RandomSpawnPoint()
@@ -165,7 +175,7 @@ class SnowballThrowingGame : LidContentInterface
         {
             // Vector mousePos = game.Mouse.PositionOnWorld;
             // Vector playerPos = player.Position;
-            PhysicsObject ball = new PhysicsObject(100, 100, Shape.Circle);
+            PhysicsObject ball = new PhysicsObject(20, 20, Shape.Circle);
             ball.Position = player.Position;
             ball.LifetimeLeft = new TimeSpan(0, 0, 3);
             game.AddCollisionHandler(ball, "enemy", DestroyEnemy);
