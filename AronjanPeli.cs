@@ -28,6 +28,8 @@ public class AronjanPeli : PhysicsGame
                 Mouse.ListenOn(calendarLids[i], MouseButton.Left, ButtonState.Pressed, content[i].Start, null);
         }
 
+        MessageDisplay.MessageTime = new TimeSpan(0, 0, 3);
+
 
         SuffleLids();
         AddLids(side);
