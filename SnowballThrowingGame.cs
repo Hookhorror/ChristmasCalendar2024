@@ -32,8 +32,18 @@ class SnowballThrowingGame : LidContentInterface
         _points.Value = 0;
         AddPlayer();
         AddControllers();
-        AddInterface();
+        AddUI();
         AddTimers();
+        InitMap();
+        // TODO: Snowmen to spawn from outside of the screen
+    }
+
+    private void InitMap()
+    {
+        _game.Level.Size = new Vector(1024, 768);
+        _game.Level.CreateBorders();
+        _game.Level.Background.Image = Game.LoadImage("Snow1.png");
+        _game.Level.Background.TileToLevel();
     }
 
     private void AddTimers()
@@ -42,7 +52,7 @@ class SnowballThrowingGame : LidContentInterface
         raiseDifficulty.Start();
         Timer spawnEnemies = new Timer(2, SpawnEnemies);
         spawnEnemies.Start();
-        _game.MessageDisplay.MessageTime = new TimeSpan(10000);
+        // _game.MessageDisplay.MessageTime = new TimeSpan(1); // TODO: messages don't work
     }
 
 
@@ -54,7 +64,7 @@ class SnowballThrowingGame : LidContentInterface
         }
     }
 
-    private void AddInterface()
+    private void AddUI()
     {
         Label labelPoints = new Label();
         labelPoints.Title = "Pisteet: ";
@@ -67,15 +77,20 @@ class SnowballThrowingGame : LidContentInterface
     private void AddPlayer()
     {
         _player = new PhysicsObject(50, 50);
-        _player.IgnoresCollisionResponse = true;
-        _game.AddCollisionHandler(_player, "enemy", GameOver);
+        _player.CanRotate = false;
+        _game.AddCollisionHandler(_player, "enemy", PlayerHitsEnemy);
 
         _game.Add(_player);
     }
 
-    private void GameOver(PhysicsObject collider, PhysicsObject target)
+    private void PlayerHitsEnemy(PhysicsObject collider, PhysicsObject target)
     {
         collider.Destroy();
+        GameOver();
+    }
+
+    private void GameOver()
+    {
         _game.MessageDisplay.Add("Hävisit pelin :(");
         _game.StopAll();
         _game.ClearTimers();
@@ -156,26 +171,26 @@ class SnowballThrowingGame : LidContentInterface
         double speed = 300;
         if (_game.Keyboard.IsKeyDown(Key.W) && _game.Keyboard.IsKeyDown(Key.A))
         {
-            _player.Move(new Vector(-1, 1).Normalize() * speed);
+            _player.Velocity = new Vector(-1, 1).Normalize() * speed;
             return;
         }
         if (_game.Keyboard.IsKeyDown(Key.S) && _game.Keyboard.IsKeyDown(Key.A))
         {
-            _player.Move(new Vector(-1, -1).Normalize() * speed);
+            _player.Velocity = new Vector(-1, -1).Normalize() * speed;
             return;
         }
         if (_game.Keyboard.IsKeyDown(Key.S) && _game.Keyboard.IsKeyDown(Key.D))
         {
-            _player.Move(new Vector(1, -1).Normalize() * speed);
+            _player.Velocity = new Vector(1, -1).Normalize() * speed;
             return;
         }
         if (_game.Keyboard.IsKeyDown(Key.W) && _game.Keyboard.IsKeyDown(Key.D))
         {
-            _player.Move(new Vector(1, 1).Normalize() * speed);
+            _player.Velocity = new Vector(1, 1).Normalize() * speed;
             return;
         }
 
-        _player.Move(direction * speed);
+        _player.Velocity = direction * speed;
     }
 
     private void OpenMenu()
@@ -203,22 +218,29 @@ class SnowballThrowingGame : LidContentInterface
             // Vector mousePos = game.Mouse.PositionOnWorld;
             // Vector playerPos = player.Position;
             PhysicsObject ball = new PhysicsObject(20, 20, Shape.Circle);
-            ball.Position = _player.Position;
+            Vector directionOfHit = (_game.Mouse.PositionOnWorld - _player.Position).Normalize();
+            ball.Position = _player.Position + directionOfHit * (_player.Width / 2);
             ball.LifetimeLeft = new TimeSpan(0, 0, 3);
-            _game.AddCollisionHandler(ball, "enemy", DestroyEnemy);
+            _game.AddCollisionHandler(ball, BallHits);
             _game.Add(ball);
 
-            Vector directionOfHit = (_game.Mouse.PositionOnWorld - ball.Position).Normalize();
             ball.Hit(directionOfHit * ball.Mass * 1000);
         }
     }
 
 
-    private void DestroyEnemy(PhysicsObject collider, PhysicsObject target)
+    private void BallHits(PhysicsObject collider, PhysicsObject target)
     {
-        target.Destroy();
-        collider.Destroy();
-        _points.Value++;
+        if (target != _player)
+        {
+            collider.Destroy();
+
+            if (target.Tag.ToString().Equals("enemy"))
+            {
+                target.Destroy();
+                _points.Value++;
+            }
+        }
     }
 
     private void ShowHighScores()

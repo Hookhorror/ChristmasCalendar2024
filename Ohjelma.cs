@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 #endregion
 
-namespace AronjanPeli
+namespace ChristmasCalendar2024
 {
     /// <summary>
     /// The main class.
@@ -17,7 +17,7 @@ namespace AronjanPeli
         [STAThread]
         static void Main()
         {
-            using var game = new AronjanPeli();
+            using var game = new ChristmanCalendar2024();
             game.Run();
         }
     }
