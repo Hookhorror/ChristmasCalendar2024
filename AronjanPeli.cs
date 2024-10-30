@@ -14,6 +14,7 @@ public class AronjanPeli : PhysicsGame
 
     public override void Begin()
     {
+
         ClearAll();
         content[0] = new SnowballThrowingGame(this);
 

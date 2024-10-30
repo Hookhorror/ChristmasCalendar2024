@@ -25,9 +25,15 @@ class SnowballThrowingGame : LidContentInterface
         game.Camera.Reset();
         game.Camera.Zoom(0.5);
         AddPlayer();
+        AddMap();
         AddControllers();
         AddInterface();
         AddTimers();
+    }
+
+    private void AddMap()
+    {
+        game.Level.CreateBorders();
     }
 
     private void AddTimers()
@@ -36,8 +42,6 @@ class SnowballThrowingGame : LidContentInterface
         raiseDifficulty.Start();
         Timer spawnEnemies = new Timer(2, SpawnEnemies);
         spawnEnemies.Start();
-        game.MessageDisplay.MessageTime = new TimeSpan(10000);
-
     }
 
     private void RaiseDifficulty()
@@ -56,26 +60,19 @@ class SnowballThrowingGame : LidContentInterface
         labelPoints.BindTo(points);
         game.Add(labelPoints);
         // TODO resizing window doesn't recalculate label positions
+        // game.WindowSizeChanged
     }
 
     private void AddPlayer()
     {
         player = new PhysicsObject(50, 50);
         player.IgnoresCollisionResponse = true;
-        game.AddCollisionHandler(player, "enemy", GameOver);
-
         game.Add(player);
-    }
-
-    private void GameOver(PhysicsObject collider, PhysicsObject target)
-    {
-        game.MessageDisplay.Add("Hävisit pelin :(");
     }
 
     private void SpawnEnemies()
     {
         int howMany = RandomGen.NextInt(difficulty) + 1;
-        // game.MessageDisplay.Add($"Spawned {howMany} enemies");
         for (int i = 0; i < howMany; i++)
         {
             SpawnEnemy();
@@ -89,7 +86,7 @@ class SnowballThrowingGame : LidContentInterface
         enemy.Tag = "enemy";
         enemy.Color = Color.Black;
         FollowerBrain brain = new FollowerBrain(player);
-        brain.Speed = RandomGen.NextDouble(25, 200);
+        brain.Speed = 100;
         enemy.Brain = brain;
         game.Add(enemy);
     }
@@ -120,7 +117,6 @@ class SnowballThrowingGame : LidContentInterface
 
     private void AddControllers()
     {
-        // TODO snowball throwing while holding left mouse button
         game.Keyboard.Listen(Key.Space, ButtonState.Pressed, ThrowBall, "Heittää lumipallon");
         game.Mouse.Listen(MouseButton.Left, ButtonState.Pressed, ThrowBall, "Heittää Lumipallon");
         game.Keyboard.Listen(Key.Escape, ButtonState.Pressed, EnterMenu, "Pausettaa pelin ja avaa menun");
