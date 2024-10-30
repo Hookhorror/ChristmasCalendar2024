@@ -5,9 +5,9 @@ using Jypeli.Assets;
 using Jypeli.Controls;
 using Jypeli.Widgets;
 
-namespace AronjanPeli;
+namespace ChristmasCalendar2024;
 
-public class AronjanPeli : PhysicsGame
+public class ChristmanCalendar2024 : PhysicsGame
 {
     private readonly CalendarLid[] calendarLids = new CalendarLid[24];
     private readonly LidContentInterface[] content = new LidContentInterface[24];
@@ -18,10 +18,10 @@ public class AronjanPeli : PhysicsGame
         ClearAll();
         content[0] = new SnowballThrowingGame(this);
 
-        double side = 100;
+        double sideLength = 100;
         for (int i = 0; i < 24; i++)
         {
-            CalendarLid cl = new CalendarLid(side, side, i + 1);
+            CalendarLid cl = new CalendarLid(sideLength, sideLength, i + 1);
             Mouse.ListenOn(cl, MouseButton.Left, ButtonState.Pressed, delegate { MessageDisplay.Add($"Clicked lid {cl.lidNumber:D2}"); /* game.StartGame(); */ }, null);
             calendarLids[i] = cl;
             // TODO opening a lid
@@ -29,11 +29,11 @@ public class AronjanPeli : PhysicsGame
                 Mouse.ListenOn(calendarLids[i], MouseButton.Left, ButtonState.Pressed, content[i].Start, null);
         }
 
-        MessageDisplay.MessageTime = new TimeSpan(0, 0, 3);
+        // MessageDisplay.MessageTime = new TimeSpan(0, 0, 3);
 
 
         SuffleLids();
-        AddLids(side);
+        AddLids(sideLength);
 
         AddControls();
         Camera.ZoomToAllObjects(50);
