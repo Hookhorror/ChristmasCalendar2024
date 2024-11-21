@@ -49,7 +49,7 @@ class SnowballThrowingGame : LidContentInterface
 
     private void AddMap()
     {
-        game.Level.CreateBorders();
+        _game.Level.CreateBorders();
     }
 
     private void AddTimers()
