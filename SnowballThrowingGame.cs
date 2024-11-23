@@ -213,10 +213,9 @@ class SnowballThrowingGame : LidContentInterface
 
     private void ThrowBall()
     {
+        // TODO continuous throwing
         if (!_game.IsPaused)
         {
-            // Vector mousePos = game.Mouse.PositionOnWorld;
-            // Vector playerPos = player.Position;
             PhysicsObject ball = new PhysicsObject(20, 20, Shape.Circle);
             Vector directionOfHit = (_game.Mouse.PositionOnWorld - _player.Position).Normalize();
             ball.Position = _player.Position + directionOfHit * (_player.Width / 2);

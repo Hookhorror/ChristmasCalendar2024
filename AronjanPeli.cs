@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using Jypeli;
 using Jypeli.Assets;
 using Jypeli.Controls;
@@ -14,8 +15,12 @@ public class ChristmanCalendar2024 : PhysicsGame
 
     public override void Begin()
     {
+
         ClearAll();
+        // Level.Background.CreateGradient(Color.Green, Color.Red);
+        // Level.Background.Image = LoadImage("ChristmasTree.jpg");
         content[0] = new SnowballThrowingGame(this);
+        content[1] = new StoryPlayer(this, "example");
 
         double sideLength = 100;
         for (int i = 0; i < 24; i++)
