@@ -22,6 +22,8 @@ public class ChristmanCalendar2024 : PhysicsGame
         content[0] = new SnowballThrowingGame(this);
         content[1] = new StoryPlayer(this, "example");
 
+        content[2] = new ClickingGame(this);
+
         double sideLength = 100;
         for (int i = 0; i < 24; i++)
         {

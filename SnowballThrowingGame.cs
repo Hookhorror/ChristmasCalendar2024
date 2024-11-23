@@ -31,6 +31,7 @@ class SnowballThrowingGame : LidContentInterface
         _game.Camera.Zoom(0.5);
         _points.Value = 0;
         AddPlayer();
+        AddMap();
         AddControllers();
         AddUI();
         AddTimers();
@@ -46,13 +47,17 @@ class SnowballThrowingGame : LidContentInterface
         _game.Level.Background.TileToLevel();
     }
 
+    private void AddMap()
+    {
+        _game.Level.CreateBorders();
+    }
+
     private void AddTimers()
     {
         Timer raiseDifficulty = new Timer(30, RaiseDifficulty);
         raiseDifficulty.Start();
         Timer spawnEnemies = new Timer(2, SpawnEnemies);
         spawnEnemies.Start();
-        // _game.MessageDisplay.MessageTime = new TimeSpan(1); // TODO: messages don't work
     }
 
 
@@ -72,6 +77,7 @@ class SnowballThrowingGame : LidContentInterface
         labelPoints.BindTo(_points);
         _game.Add(labelPoints);
         // TODO resizing window doesn't recalculate label positions
+        // game.WindowSizeChanged
     }
 
     private void AddPlayer()
