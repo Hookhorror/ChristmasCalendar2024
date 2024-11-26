@@ -9,8 +9,11 @@ class ClickingGame : LidContentInterface
     private PhysicsGame _game;
     private IntMeter _points;
     private const int HowManyBlocks = 5;
-    private int missedBlocks;
+    private int _life = 3;
+    private int _blocksLeft;
+    private double _spawnTime = 5;
     private static readonly List<PhysicsObject> _blocks = new List<PhysicsObject>();
+    private static readonly SoundEffect[] sounds = Game.LoadSoundEffects("Tap", "Spring", "Pig", "Sheep");
 
     public ClickingGame(PhysicsGame game)
     {
@@ -35,19 +38,40 @@ class ClickingGame : LidContentInterface
 
     private void StartTimers()
     {
-        Timer blockSpawner = new Timer(5, DestroyAndCreateBlocks);
+        double timeout = 5.0;
+
+        Timer blockSpawner = new Timer(timeout);
+        blockSpawner.Timeout += DestroyAndCreateBlocks;
         blockSpawner.Start();
+
+        Timer increaseDifficulty = new Timer(timeout);
+        increaseDifficulty.Timeout += () => IncreaseDifficulty(blockSpawner);
+        increaseDifficulty.Start();
     }
 
     private void DestroyAndCreateBlocks()
     {
         DestroyBlocks();
         CreateBlocks();
+        // IncreaseDifficulty(spawner);
+    }
+
+    private void IncreaseDifficulty(Timer spawner)
+    {
+        if (spawner.Interval >= 2.5)
+        {
+            // TODO Too hard
+            spawner.Interval -= 0.2;
+        }
     }
 
     private void DestroyBlocks()
     {
-        if (missedBlocks >= 3) GameOver();
+        if (_blocksLeft <= 0)
+            _life++;
+        else
+            _life -= _blocksLeft;
+        if (_life <= 0) GameOver();
 
         foreach (PhysicsObject block in _blocks)
         {
@@ -59,18 +83,21 @@ class ClickingGame : LidContentInterface
     private void GameOver()
     {
         _game.MessageDisplay.Add("Peli päättynyt :(");
+        // TODO ending
     }
 
     private void InitGame()
     {
         _game.ClearAll();
+        _game.Level.Size = new Vector(Game.Screen.Width - 100, Game.Screen.Height - 100);
         AddUI();
-        CreateBlocks();
+        CreateBlocks(); // TODO instructions
         StartTimers();
     }
 
     private void CreateBlocks()
     {
+        _blocksLeft = 0;
         for (int i = 0; i < HowManyBlocks; i++)
         {
             CreateRandomBlock();
@@ -79,9 +106,9 @@ class ClickingGame : LidContentInterface
 
     private void CreateRandomBlock()
     {
-        double height = RandomGen.NextDouble(10, 200);
-        double width = RandomGen.NextDouble(10, 200);
-        Vector position = _game.Level.GetRandomFreePosition(10);
+        double height = RandomGen.NextDouble(25, 200);
+        double width = RandomGen.NextDouble(25, 200);
+        Vector position = _game.Level.GetRandomFreePosition(100);
 
         GameObject block = CreateBlock(height, width, position);
         block.Angle = RandomGen.NextAngle();
@@ -95,7 +122,7 @@ class ClickingGame : LidContentInterface
         block.Position = position;
         // block.LifetimeLeft = new TimeSpan(0, 0, 5);
         _blocks.Add(block);
-        missedBlocks++;
+        _blocksLeft++;
 
         _game.Mouse.ListenOn(block, MouseButton.Left, ButtonState.Pressed, HandleClick, null, block);
 
@@ -104,9 +131,31 @@ class ClickingGame : LidContentInterface
 
     private void HandleClick(GameObject clicked)
     {
-        _game.MessageDisplay.Add("Tuhosit laatikon");
         _points.Value++;
-        missedBlocks--;
+        _blocksLeft--;
         clicked.Destroy();
+        PlaySound();
+    }
+
+    private void PlaySound()
+    {
+        int max = 1000;
+        int r = RandomGen.NextInt(max);
+        if (r == max - 1)
+        {
+            sounds[3].Play();
+            return;
+        }
+        if (r >= 990)
+        {
+            sounds[2].Play();
+            return;
+        }
+        if (r >= 900)
+        {
+            sounds[1].Play();
+            return;
+        }
+        sounds[0].Play();
     }
 }

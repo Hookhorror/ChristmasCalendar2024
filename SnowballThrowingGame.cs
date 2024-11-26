@@ -9,9 +9,15 @@ class SnowballThrowingGame : LidContentInterface
     private PhysicsObject _player;
     private readonly IntMeter _points = new IntMeter(0);
     private static readonly Image[] _snowmanImages = Game.LoadImages("Lumiukko-1.png", "Lumiukko-2.png", "Lumiukko-3.png", "Lumiukko-2.png");
+    private static readonly Image _playerRight = Game.LoadImage("Toy.png");
+    // private static readonly Image _playerLeft = Image.Mirror(_playerRight);
     private static readonly Animation _snowmanAnim = new Animation(_snowmanImages);
+    private static readonly Animation ToyAnimRight = new Animation(Game.LoadImages("Toy1", "Toy2", "Toy3", "Toy2"));
+    // private static readonly Animation ToyAnimLeft = Animation.Mirror(ToyAnimRight);
     private static readonly Shape _snowmanShape = Shape.FromImage(_snowmanImages[0]);
+    private static readonly Shape PlayerShape = Shape.FromImage(Game.LoadImage("Toy1"));
     private ScoreList _highScore = new ScoreList(10, false, 0);
+    private bool _movingRight;
 
     public SnowballThrowingGame(PhysicsGame game)
     {
@@ -37,6 +43,7 @@ class SnowballThrowingGame : LidContentInterface
         AddTimers();
         InitMap();
         // TODO: Snowmen to spawn from outside of the screen
+        // TODO Sounds for throwing, dying, monster death etc
     }
 
     private void InitMap()
@@ -82,11 +89,20 @@ class SnowballThrowingGame : LidContentInterface
 
     private void AddPlayer()
     {
-        _player = new PhysicsObject(50, 50);
+        _player = new PhysicsObject(75, 75);
         _player.CanRotate = false;
+        _player.Shape = PlayerShape;
         _game.AddCollisionHandler(_player, "enemy", PlayerHitsEnemy);
+        AnimatePlayer(ToyAnimRight);
 
         _game.Add(_player);
+    }
+
+    private void AnimatePlayer(Animation anim)
+    {
+        _player.Animation = anim;
+        _player.Animation.FPS = 3;
+        _player.Animation.Start();
     }
 
     private void PlayerHitsEnemy(PhysicsObject collider, PhysicsObject target)
@@ -106,7 +122,6 @@ class SnowballThrowingGame : LidContentInterface
     private void SpawnEnemies()
     {
         int howMany = RandomGen.NextInt(_difficulty) + 1;
-        // game.MessageDisplay.Add($"Spawned {howMany} enemies");
         for (int i = 0; i < howMany; i++)
         {
             SpawnEnemy();
@@ -127,7 +142,6 @@ class SnowballThrowingGame : LidContentInterface
         enemy.Animation.FPS = 4;
         enemy.Animation.Start();
         _game.Add(enemy);
-        // TODO change facing of animation?
     }
 
     private Vector RandomSpawnPoint()
@@ -172,9 +186,15 @@ class SnowballThrowingGame : LidContentInterface
         _game.Keyboard.Listen(Key.A, ButtonState.Released, _player.Stop, null);
     }
 
+    private void StopPlayer()
+    {
+        _movingRight = false;
+    }
+
     private void MovePlayer(Vector direction)
     {
         double speed = 300;
+
         if (_game.Keyboard.IsKeyDown(Key.W) && _game.Keyboard.IsKeyDown(Key.A))
         {
             _player.Velocity = new Vector(-1, 1).Normalize() * speed;
