@@ -9,11 +9,10 @@ class SnowballThrowingGame : LidContentInterface
     private PhysicsObject _player;
     private readonly IntMeter _points = new IntMeter(0);
     private static readonly Image[] _snowmanImages = Game.LoadImages("Lumiukko-1.png", "Lumiukko-2.png", "Lumiukko-3.png", "Lumiukko-2.png");
-    private static readonly Image _playerRight = Game.LoadImage("Toy.png");
-    // private static readonly Image _playerLeft = Image.Mirror(_playerRight);
     private static readonly Animation _snowmanAnim = new Animation(_snowmanImages);
     private static readonly Animation ToyAnimRight = new Animation(Game.LoadImages("Toy1", "Toy2", "Toy3", "Toy2"));
-    // private static readonly Animation ToyAnimLeft = Animation.Mirror(ToyAnimRight);
+    private static readonly SoundEffect[] ThrowSounds = Game.LoadSoundEffects("Whoosh1", "Whoosh2", "Whoosh3");
+    private static readonly SoundEffect[] DeathSounds = Game.LoadSoundEffects("Jippii", "Wii", "WilhelmScream", "Fail");
     private static readonly Shape _snowmanShape = Shape.FromImage(_snowmanImages[0]);
     private static readonly Shape PlayerShape = Shape.FromImage(Game.LoadImage("Toy1"));
     private ScoreList _highScore = new ScoreList(10, false, 0);
@@ -43,7 +42,6 @@ class SnowballThrowingGame : LidContentInterface
         AddTimers();
         InitMap();
         // TODO: Snowmen to spawn from outside of the screen
-        // TODO Sounds for throwing, dying, monster death etc
     }
 
     private void InitMap()
@@ -113,6 +111,7 @@ class SnowballThrowingGame : LidContentInterface
 
     private void GameOver()
     {
+        DeathSounds[3].Play();
         _game.MessageDisplay.Add("Hävisit pelin :(");
         _game.StopAll();
         _game.ClearTimers();
@@ -244,12 +243,14 @@ class SnowballThrowingGame : LidContentInterface
         {
             PhysicsObject ball = new PhysicsObject(20, 20, Shape.Circle);
             Vector directionOfHit = (_game.Mouse.PositionOnWorld - _player.Position).Normalize();
-            ball.Position = _player.Position + directionOfHit * (_player.Width / 2);
+            ball.Position = _player.Position + directionOfHit * (_player.Width / 1.5);
             ball.LifetimeLeft = new TimeSpan(0, 0, 3);
             _game.AddCollisionHandler(ball, BallHits);
             _game.Add(ball);
 
             ball.Hit(directionOfHit * ball.Mass * 1000);
+
+            RandomGen.SelectOne(ThrowSounds).Play();
         }
     }
 
@@ -264,6 +265,15 @@ class SnowballThrowingGame : LidContentInterface
             {
                 target.Destroy();
                 _points.Value++;
+                int max = 1000;
+                int specialSound = RandomGen.NextInt(max);
+                if (specialSound == max - 1)
+                {
+                    DeathSounds[2].Play();
+                    return;
+                }
+                int normalSound = RandomGen.NextInt(2);
+                DeathSounds[normalSound].Play();
             }
         }
     }
@@ -272,9 +282,9 @@ class SnowballThrowingGame : LidContentInterface
     {
         _highScore = Game.DataStorage.TryLoad<ScoreList>(_highScore, "SnowmanDefenceHighScore.xml");
 
-        HighScoreWindow w = new HighScoreWindow("Parhaat pisteet", _highScore);
-        w.Closed += delegate { OpenMenu(); };
-        _game.Add(w);
+        HighScoreWindow window = new HighScoreWindow("Parhaat pisteet", _highScore);
+        window.Closed += delegate { OpenMenu(); };
+        _game.Add(window);
     }
 
     private void NewHighScores()

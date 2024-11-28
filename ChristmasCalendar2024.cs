@@ -13,7 +13,7 @@ public class ChristmanCalendar2024 : PhysicsGame
     private readonly CalendarLid[] calendarLids = new CalendarLid[24];
     private readonly LidContentInterface[] content = new LidContentInterface[24];
 
-
+    // TODO Lid opening restriction
 
     public override void Begin()
     {
