@@ -20,7 +20,10 @@ public class ChristmanCalendar2024 : PhysicsGame
         ClearAll();
         MasterVolume = 0.5;
         // Level.Background.CreateGradient(Color.Green, Color.Red);
-        // Level.Background.Image = LoadImage("ChristmasTree.jpg");
+        Level.Background.Image = LoadImage("ChristmasTree.jpg");
+        Level.Size *= 2;
+        Level.Background.FitToLevel();
+        // Level.Background.Image.Rescale((int)Screen.Size.X, (int)Screen.Size.Y);
         content[0] = new SnowballThrowingGame(this);
         content[1] = new StoryPlayer(this, "example");
         content[2] = new ClickingGame(this);
@@ -38,25 +41,13 @@ public class ChristmanCalendar2024 : PhysicsGame
             Mouse.ListenOn(cl, MouseButton.Left, ButtonState.Pressed, cl.Open, null);
         }
 
-        // MessageDisplay.MessageTime = new TimeSpan(0, 0, 3);
-
-
         SuffleLids();
         AddLids(sideLength);
 
         AddControls();
         Camera.ZoomToAllObjects(50);
 
-
-
-        // game.StartGame();
-        // game.Run();
-
-        // Camera.Follow(pelaaja1);
-        // Camera.ZoomFactor = 1.2;
-        // Camera.StayInLevel = true;
-
-        // MasterVolume = 0.5;
+        Tools.PrintMousePositionOnClick(this);
     }
 
     private void StartGame(LidContentInterface game, CalendarLid cl)
@@ -69,11 +60,16 @@ public class ChristmanCalendar2024 : PhysicsGame
 
     private void AddLids(double side)
     {
+        int columns = 8;
+        int rows = 3;
+        int gap = 50;
+        double centerX = (columns / 2.0) * (side + gap) - side / 2;
+        double centerY = (rows / 2.0) * (side + gap) - gap - side / 2;
         for (int i = 0; i < calendarLids.Length; i++)
         {
             CalendarLid cl = calendarLids[i];
-            cl.X = (i % 8) * (50 + side);
-            cl.Y = (i / 8) * -(50 + side);
+            cl.X = (i % columns) * (gap + side) - centerX;
+            cl.Y = (i / columns) * -(gap + side) + centerY;
             Add(cl);
         }
     }
