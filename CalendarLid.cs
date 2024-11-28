@@ -31,12 +31,32 @@ class CalendarLid : GameObject
 
     public void Open()
     {
-        if (!Opened)
+        if (CanYouOpen())
         {
-            Opened = true;
-            LidOpening.Start();
-            CreakingDoor.Play();
+
+            if (!Opened)
+            {
+                Opened = true;
+                LidOpening.Start();
+                CreakingDoor.Play();
+            }
         }
         // TODO Image for game
+    }
+
+    private bool CanYouOpen()
+    {
+        DateTime currentDay = DateTime.Now;
+
+        if (currentDay.Month == 12 || currentDay.Year > 2024)
+        {
+            if (currentDay.Day >= lidNumber || currentDay.Year > 2024)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        return false;
     }
 }
