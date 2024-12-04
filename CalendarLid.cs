@@ -45,9 +45,10 @@ class CalendarLid : GameObject
     {
         DateTime currentDay = DateTime.Now;
 
-        if (currentDay.Month == 12 || currentDay.Year > 2024)
+        // TODO Put these back
+        // if (currentDay.Month == 12 || currentDay.Year > 2024)
         {
-            if (currentDay.Day >= lidNumber || currentDay.Year > 2024)
+            // if (currentDay.Day >= lidNumber || currentDay.Year > 2024)
             {
                 return true;
             }

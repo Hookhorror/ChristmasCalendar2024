@@ -9,6 +9,7 @@ class SnowballThrowingGame : LidContentInterface
     private PhysicsObject _player;
     private readonly IntMeter _points = new IntMeter(0);
     private static readonly Image[] _snowmanImages = Game.LoadImages("Lumiukko-1.png", "Lumiukko-2.png", "Lumiukko-3.png", "Lumiukko-2.png");
+    private static readonly Image[] BackGroundImages = Game.LoadImages("Snow1", "Snow2", "Snow3", "Snow4");
     private static readonly Animation _snowmanAnim = new Animation(_snowmanImages);
     private static readonly Animation ToyAnimRight = new Animation(Game.LoadImages("Toy1", "Toy2", "Toy3", "Toy2"));
     private static readonly SoundEffect[] ThrowSounds = Game.LoadSoundEffects("Whoosh1", "Whoosh2", "Whoosh3");
@@ -16,7 +17,6 @@ class SnowballThrowingGame : LidContentInterface
     private static readonly Shape _snowmanShape = Shape.FromImage(_snowmanImages[0]);
     private static readonly Shape PlayerShape = Shape.FromImage(Game.LoadImage("Toy1"));
     private ScoreList _highScore = new ScoreList(10, false, 0);
-    private bool _movingRight;
 
     public SnowballThrowingGame(PhysicsGame game)
     {
@@ -36,25 +36,49 @@ class SnowballThrowingGame : LidContentInterface
         _game.Camera.Zoom(0.5);
         _points.Value = 0;
         AddPlayer();
-        AddMap();
-        AddControllers();
+        InitMap();
+        AddControls();
         AddUI();
         AddTimers();
-        InitMap();
-        // TODO: Snowmen to spawn from outside of the screen
     }
 
     private void InitMap()
     {
-        _game.Level.Size = new Vector(1024, 768);
-        _game.Level.CreateBorders();
-        _game.Level.Background.Image = Game.LoadImage("Snow1.png");
-        _game.Level.Background.TileToLevel();
+        _game.Level.Size = new Vector(1024, 1024);
+        PhysicsObject[] borders = { _game.Level.CreateLeftBorder(), _game.Level.CreateTopBorder()
+            , _game.Level.CreateRightBorder(), _game.Level.CreateBottomBorder() };
+
+        foreach (PhysicsObject border in borders)
+        {
+            border.IsVisible = false;
+            _game.Add(border);
+        }
+
+        _game.Level.BackgroundColor = Color.FromHexCode("#003300");
+        // _game.Level.Background.Image = Game.LoadImage("Snow1.png");
+        // _game.Level.Background.TileToLevel();
+        AddBackGround();
     }
 
-    private void AddMap()
+    private void AddBackGround()
     {
-        _game.Level.CreateBorders();
+        int rows = 20;
+        int columns = 20;
+        double width = _game.Level.Width / columns;
+        double height = _game.Level.Height / rows;
+        // Vector position = 
+        for (int column = 0; column < columns; column++)
+        {
+            for (int row = 0; row < rows; row++)
+            {
+
+                GameObject tile = new GameObject(width, height);
+                tile.Position = new Vector(_game.Level.Left + (width / 2) + width * row, _game.Level.Top - (height / 2) - height * column);
+                tile.Image = RandomGen.SelectOne(BackGroundImages);
+
+                _game.Add(tile, -3);
+            }
+        }
     }
 
     private void AddTimers()
@@ -78,9 +102,11 @@ class SnowballThrowingGame : LidContentInterface
     {
         Label labelPoints = new Label();
         labelPoints.Title = "Pisteet: ";
-        labelPoints.Position = new Vector(_game.Level.Right - 100, _game.Level.Top - 50);
+        labelPoints.Position = new Vector(_game.Level.Right - 100, _game.Level.Top + 50);
+        labelPoints.TextScale = new Vector(2, 2);
+        labelPoints.TextColor = Color.White;
         labelPoints.BindTo(_points);
-        _game.Add(labelPoints);
+        _game.Add(labelPoints, 3);
         // TODO resizing window doesn't recalculate label positions
         // game.WindowSizeChanged
     }
@@ -111,6 +137,16 @@ class SnowballThrowingGame : LidContentInterface
 
     private void GameOver()
     {
+        _game.Mouse.Disable(MouseButton.Left);
+        _game.Keyboard.Disable(Key.W);
+        _game.Keyboard.Disable(Key.A);
+        _game.Keyboard.Disable(Key.S);
+        _game.Keyboard.Disable(Key.D);
+        _game.Keyboard.Disable(Key.Left);
+        _game.Keyboard.Disable(Key.Up);
+        _game.Keyboard.Disable(Key.Down);
+        _game.Keyboard.Disable(Key.Right);
+
         DeathSounds[3].Play();
         _game.MessageDisplay.Add("Hävisit pelin :(");
         _game.StopAll();
@@ -146,8 +182,8 @@ class SnowballThrowingGame : LidContentInterface
     private Vector RandomSpawnPoint()
     {
         int direction = RandomGen.NextInt(4);
-        double y = 0;
-        double x = 0;
+        double y;
+        double x;
         switch (direction)
         {
             case 0:
@@ -167,7 +203,7 @@ class SnowballThrowingGame : LidContentInterface
         }
     }
 
-    private void AddControllers()
+    private void AddControls()
     {
         // TODO snowball throwing while holding left mouse button
         _game.Keyboard.Listen(Key.Space, ButtonState.Pressed, ThrowBall, "Heittää lumipallon");
@@ -177,39 +213,43 @@ class SnowballThrowingGame : LidContentInterface
 
         _game.Keyboard.Listen(Key.W, ButtonState.Down, MovePlayer, "Liike ylös", new Vector(0, 1));
         _game.Keyboard.Listen(Key.W, ButtonState.Released, _player.Stop, null);
+        _game.Keyboard.Listen(Key.Up, ButtonState.Down, MovePlayer, "Liike ylös", new Vector(0, 1));
+        _game.Keyboard.Listen(Key.Up, ButtonState.Released, _player.Stop, null);
         _game.Keyboard.Listen(Key.S, ButtonState.Down, MovePlayer, "Liike alas", new Vector(0, -1));
         _game.Keyboard.Listen(Key.S, ButtonState.Released, _player.Stop, null);
+        _game.Keyboard.Listen(Key.Down, ButtonState.Down, MovePlayer, "Liike alas", new Vector(0, -1));
+        _game.Keyboard.Listen(Key.Down, ButtonState.Released, _player.Stop, null);
         _game.Keyboard.Listen(Key.D, ButtonState.Down, MovePlayer, "Liike oikealle", new Vector(1, 0));
         _game.Keyboard.Listen(Key.D, ButtonState.Released, _player.Stop, null);
+        _game.Keyboard.Listen(Key.Right, ButtonState.Down, MovePlayer, "Liike oikealle", new Vector(1, 0));
+        _game.Keyboard.Listen(Key.Right, ButtonState.Released, _player.Stop, null);
         _game.Keyboard.Listen(Key.A, ButtonState.Down, MovePlayer, "Liike vasemmalle", new Vector(-1, 0));
         _game.Keyboard.Listen(Key.A, ButtonState.Released, _player.Stop, null);
+        _game.Keyboard.Listen(Key.Left, ButtonState.Down, MovePlayer, "Liike vasemmalle", new Vector(-1, 0));
+        _game.Keyboard.Listen(Key.Left, ButtonState.Released, _player.Stop, null);
     }
 
-    private void StopPlayer()
-    {
-        _movingRight = false;
-    }
 
     private void MovePlayer(Vector direction)
     {
         double speed = 300;
 
-        if (_game.Keyboard.IsKeyDown(Key.W) && _game.Keyboard.IsKeyDown(Key.A))
+        if ((_game.Keyboard.IsKeyDown(Key.W) || _game.Keyboard.IsKeyDown(Key.Up)) && (_game.Keyboard.IsKeyDown(Key.A) || _game.Keyboard.IsKeyDown(Key.Left)))
         {
             _player.Velocity = new Vector(-1, 1).Normalize() * speed;
             return;
         }
-        if (_game.Keyboard.IsKeyDown(Key.S) && _game.Keyboard.IsKeyDown(Key.A))
+        if ((_game.Keyboard.IsKeyDown(Key.S) || _game.Keyboard.IsKeyDown(Key.Down)) && (_game.Keyboard.IsKeyDown(Key.A) || _game.Keyboard.IsKeyDown(Key.Left)))
         {
             _player.Velocity = new Vector(-1, -1).Normalize() * speed;
             return;
         }
-        if (_game.Keyboard.IsKeyDown(Key.S) && _game.Keyboard.IsKeyDown(Key.D))
+        if ((_game.Keyboard.IsKeyDown(Key.S) || _game.Keyboard.IsKeyDown(Key.Down)) && (_game.Keyboard.IsKeyDown(Key.D) || _game.Keyboard.IsKeyDown(Key.Right)))
         {
             _player.Velocity = new Vector(1, -1).Normalize() * speed;
             return;
         }
-        if (_game.Keyboard.IsKeyDown(Key.W) && _game.Keyboard.IsKeyDown(Key.D))
+        if ((_game.Keyboard.IsKeyDown(Key.W) || _game.Keyboard.IsKeyDown(Key.Up)) && (_game.Keyboard.IsKeyDown(Key.D) || _game.Keyboard.IsKeyDown(Key.Right)))
         {
             _player.Velocity = new Vector(1, 1).Normalize() * speed;
             return;

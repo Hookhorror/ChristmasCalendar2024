@@ -1,32 +1,32 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
 using Jypeli;
-using Jypeli.Assets;
-using Jypeli.Controls;
-using Jypeli.Widgets;
 
-namespace ChristmasCalendar2024;
 
-public class ChristmanCalendar2024 : PhysicsGame
+public class ChristmasCalendar2024 : PhysicsGame
 {
     private readonly CalendarLid[] calendarLids = new CalendarLid[24];
     private readonly LidContentInterface[] content = new LidContentInterface[24];
 
-    // TODO Lid opening restriction
-
     public override void Begin()
+    {
+        InitCalendar();
+    }
+
+    public void InitCalendar()
     {
         ClearAll();
         MasterVolume = 0.5;
-        // Level.Background.CreateGradient(Color.Green, Color.Red);
+        Level.BackgroundColor = Color.Black;
         Level.Background.Image = LoadImage("ChristmasTree.jpg");
-        Level.Size *= 2;
-        Level.Background.FitToLevel();
-        // Level.Background.Image.Rescale((int)Screen.Size.X, (int)Screen.Size.Y);
+
         content[0] = new SnowballThrowingGame(this);
-        content[1] = new StoryPlayer(this, "example");
-        content[2] = new ClickingGame(this);
+        content[1] = new StoryPlayer(this, "Kalju metsämies");
+        content[2] = new StoryPlayer(this, "Mehiläistarhuri");
+        content[3] = new StoryPlayer(this, "Linnut, villipedot ja lepakko");
+        content[4] = new StoryPlayer(this, "Nokkava matkamies");
+        content[5] = new StoryPlayer(this, "Pojan uimaretki");
+        content[6] = new ClickingGame(this);
+        // content[7] = new StoryPlayer(this, "Poika ja pähkinät");
+        // content[8] = new StoryPlayer(this, "Poika ja susi");
 
         double sideLength = 100;
         for (int i = 0; i < calendarLids.Length; i++)
@@ -36,6 +36,7 @@ public class ChristmanCalendar2024 : PhysicsGame
             if (content[i] != null)
             {
                 LidContentInterface game = content[i];
+
                 Mouse.ListenOn(calendarLids[i], MouseButton.Left, ButtonState.Pressed, () => StartGame(game, cl), null);
             }
             Mouse.ListenOn(cl, MouseButton.Left, ButtonState.Pressed, cl.Open, null);
@@ -46,8 +47,6 @@ public class ChristmanCalendar2024 : PhysicsGame
 
         AddControls();
         Camera.ZoomToAllObjects(50);
-
-        Tools.PrintMousePositionOnClick(this);
     }
 
     private void StartGame(LidContentInterface game, CalendarLid cl)

@@ -3,14 +3,14 @@ using Jypeli;
 
 public class StoryPlayer : LidContentInterface
 {
-    private readonly PhysicsGame _game;
+    private readonly ChristmasCalendar2024 _game;
     private readonly string _mediaUrl;
     private static readonly Image[] Images = Game.LoadImages("play", "pause", "stop", "radio");
 
     private bool _paused;
     private bool _playing;
 
-    public StoryPlayer(PhysicsGame game, string url)
+    public StoryPlayer(ChristmasCalendar2024 game, string url)
     {
         _game = game;
         _mediaUrl = url;
@@ -28,11 +28,6 @@ public class StoryPlayer : LidContentInterface
         MakeButton(new Vector(-396, -82), Images[0], Play);
         MakeButton(new Vector(-311, -82), Images[1], Pause);
         MakeButton(new Vector(-226, -82), Images[2], Stop);
-        // _game.Mouse.ListenOn(b, MouseButton.Left, ButtonState.Pressed, ButtonClicked, null);
-        // _game.Mouse.Listen(MouseButton.Left, ButtonState.Pressed, () => Tools.PrintMousePosition(_game), null);
-        Tools.PrintMousePositionOnClick(_game);
-
-        // _game.Add(b);
     }
 
     private void MakeButton(Vector position, Image image, Action action)
@@ -75,27 +70,47 @@ public class StoryPlayer : LidContentInterface
         }
     }
 
-    private void ButtonClicked()
-    {
-        if (_game.MediaPlayer.IsPlaying)
-        {
-            _game.MediaPlayer.Stop();
-        }
-        else
-        {
-            _game.MediaPlayer.Play(_mediaUrl);
-        }
-    }
 
     private void InitGame()
     {
         _game.ClearAll();
         _game.Camera.Reset();
         _game.Camera.Zoom(0.5);
+        _game.Level.BackgroundColor = Color.BloodRed;
 
         GameObject radio = new GameObject(1000, 1000);
         radio.Image = Images[3];
         _game.Add(radio, -1);
         MakeButtons();
+
+        Label title = new Label(_mediaUrl);
+        title.Position = new Vector(0, 140);
+        title.TextColor = Color.White;
+        _game.Add(title);
+
+        AddControls();
+    }
+
+
+    private void AddControls()
+    {
+        _game.Keyboard.Listen(Key.Escape, ButtonState.Pressed, OpenMenu, null);
+    }
+
+
+    private void OpenMenu()
+    {
+        if (_game.IsPaused)
+        {
+            _game.Pause();
+            return;
+        }
+        _game.Pause();
+        MultiSelectWindow pauseMenu = new MultiSelectWindow("Menu", "Palaa", "Kalenteriin", "Lopeta");
+        _game.Add(pauseMenu);
+
+        pauseMenu.Closed += (handler) => _game.Pause();
+        pauseMenu.AddItemHandler(1, _game.InitCalendar); // TODO make better init calendar method
+        pauseMenu.AddItemHandler(2, _game.Exit);
     }
 }
