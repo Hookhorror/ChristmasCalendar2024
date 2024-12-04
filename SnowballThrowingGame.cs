@@ -4,7 +4,7 @@ using Jypeli.Widgets;
 
 class SnowballThrowingGame : LidContentInterface
 {
-    private readonly PhysicsGame _game;
+    private readonly ChristmasCalendar2024 _game;
     private int _difficulty = 1;
     private PhysicsObject _player;
     private readonly IntMeter _points = new IntMeter(0);
@@ -18,7 +18,7 @@ class SnowballThrowingGame : LidContentInterface
     private static readonly Shape PlayerShape = Shape.FromImage(Game.LoadImage("Toy1"));
     private ScoreList _highScore = new ScoreList(10, false, 0);
 
-    public SnowballThrowingGame(PhysicsGame game)
+    public SnowballThrowingGame(ChristmasCalendar2024 game)
     {
         this._game = game;
     }
@@ -272,7 +272,7 @@ class SnowballThrowingGame : LidContentInterface
         pauseMenu.Closed += (handler) => _game.Pause();
         pauseMenu.AddItemHandler(1, InitGame);
         pauseMenu.AddItemHandler(2, ShowHighScores);
-        pauseMenu.AddItemHandler(3, _game.Begin); // TODO make better init calendar method
+        pauseMenu.AddItemHandler(3, _game.InitCalendar);
         pauseMenu.AddItemHandler(4, _game.Exit);
     }
 
