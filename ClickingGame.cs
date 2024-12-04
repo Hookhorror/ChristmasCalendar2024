@@ -16,7 +16,6 @@ class ClickingGame : LidContentInterface
     private ScoreList _highScore = new ScoreList(10, false, 0);
 
     private static readonly List<PhysicsObject> _blocks = new List<PhysicsObject>();
-    private static readonly SoundEffect[] sounds = Game.LoadSoundEffects("Tap", "Spring", "Pig", "Sheep");
 
     public ClickingGame(ChristmasCalendar2024 game)
     {
@@ -259,19 +258,19 @@ class ClickingGame : LidContentInterface
         int r = RandomGen.NextInt(max);
         if (r == max - 1)
         {
-            sounds[3].Play();
+            Resources.ClickingGameSounds[3].Play();
             return;
         }
         if (r >= 990)
         {
-            sounds[2].Play();
+            Resources.ClickingGameSounds[2].Play();
             return;
         }
         if (r >= 900)
         {
-            sounds[1].Play();
+            Resources.ClickingGameSounds[1].Play();
             return;
         }
-        sounds[0].Play();
+        Resources.ClickingGameSounds[0].Play();
     }
 }
