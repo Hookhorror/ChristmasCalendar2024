@@ -1,3 +1,4 @@
+using System;
 using Jypeli;
 
 public class Tools
@@ -56,5 +57,16 @@ public class Tools
         }
 
         return images;
+    }
+
+    public static Shape[] ShapesFromImages(Image[] giftImages)
+    {
+        Shape[] shapes = new Shape[giftImages.Length];
+        for (int i = 0; i < giftImages.Length; i++)
+        {
+            shapes[i] = Shape.FromImage(giftImages[i]);
+        }
+
+        return shapes;
     }
 }

@@ -16,7 +16,7 @@ public class ChristmasCalendar2024 : PhysicsGame
         ClearAll();
         MasterVolume = 0.5;
         Level.BackgroundColor = Color.Black;
-        Level.Background.Image = LoadImage("ChristmasTree.jpg");
+        Level.Background.Image = Resources.ChristmasTree;
 
         content[0] = new SnowballThrowingGame(this);
         content[1] = new StoryPlayer(this, "Kalju metsämies");
@@ -25,8 +25,13 @@ public class ChristmasCalendar2024 : PhysicsGame
         content[4] = new StoryPlayer(this, "Nokkava matkamies");
         content[5] = new StoryPlayer(this, "Pojan uimaretki");
         content[6] = new ClickingGame(this);
-        // content[7] = new StoryPlayer(this, "Poika ja pähkinät");
-        // content[8] = new StoryPlayer(this, "Poika ja susi");
+        content[7] = new StoryPlayer(this, "Poika ja pähkinät");
+        content[8] = new StoryPlayer(this, "Poika ja susi");
+        content[9] = new StoryPlayer(this, "Häkkilintu ja lepakko");
+        content[10] = new StoryPlayer(this, "Rapuäiti ja sen poika");
+        content[11] = new StoryPlayer(this, "Varis ja vesikannu");
+        content[12] = new StoryPlayer(this, "Koira ja sen peilikuva");
+        content[13] = new CatchGifts(this);
 
         double sideLength = 100;
         for (int i = 0; i < calendarLids.Length; i++)

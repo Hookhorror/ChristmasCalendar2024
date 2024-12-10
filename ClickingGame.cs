@@ -91,12 +91,9 @@ class ClickingGame : LidContentInterface
 
     private void GameOver()
     {
-        _game.Mouse.Disable(MouseButton.Left);
-
         _gameOver = true;
 
-        // TODO sound
-        // DeathSounds[3].Play();
+        Resources.PlayerDeath.Play();
         _game.MessageDisplay.Add("Hävisit pelin :(");
         _game.StopAll();
         _game.ClearTimers();
@@ -127,7 +124,6 @@ class ClickingGame : LidContentInterface
         _game.ClearAll();
         _game.Level.Size = new Vector(Game.Screen.Width - 100, Game.Screen.Height - 100);
         AddUI();
-        // CreateBlocks(); // TODO instructions
         AddInstructions();
         StartTimers();
         AddControls();
@@ -163,12 +159,13 @@ class ClickingGame : LidContentInterface
         pauseMenu.Closed += (handler) => _game.Pause();
         pauseMenu.AddItemHandler(1, InitGame);
         pauseMenu.AddItemHandler(2, ShowHighScores);
-        pauseMenu.AddItemHandler(3, _game.InitCalendar); // TODO make better init calendar method
+        pauseMenu.AddItemHandler(3, _game.InitCalendar);
         pauseMenu.AddItemHandler(4, _game.Exit);
     }
 
     private void ShowHighScores()
     {
+        // TODO Game continues when opening high scores
         _highScore = Game.DataStorage.TryLoad<ScoreList>(_highScore, _highScorePath);
 
         HighScoreWindow window = new HighScoreWindow("Parhaat pisteet", _highScore);

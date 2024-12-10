@@ -116,7 +116,7 @@ class SnowballThrowingGame : LidContentInterface
         _player = new PhysicsObject(75, 75);
         _player.CanRotate = false;
         _player.Shape = PlayerShape;
-        _game.AddCollisionHandler(_player, "enemy", PlayerHitsEnemy);
+        _game.AddCollisionHandler(_player, "enemy", EnemyHitsPlayer);
         AnimatePlayer(ToyAnimRight);
 
         _game.Add(_player);
@@ -129,7 +129,7 @@ class SnowballThrowingGame : LidContentInterface
         _player.Animation.Start();
     }
 
-    private void PlayerHitsEnemy(PhysicsObject collider, PhysicsObject target)
+    private void EnemyHitsPlayer(PhysicsObject collider, PhysicsObject target)
     {
         collider.Destroy();
         GameOver();
@@ -138,6 +138,7 @@ class SnowballThrowingGame : LidContentInterface
     private void GameOver()
     {
         _game.Mouse.Disable(MouseButton.Left);
+        _game.Keyboard.Disable(Key.Space);
         _game.Keyboard.Disable(Key.W);
         _game.Keyboard.Disable(Key.A);
         _game.Keyboard.Disable(Key.S);
@@ -147,7 +148,7 @@ class SnowballThrowingGame : LidContentInterface
         _game.Keyboard.Disable(Key.Down);
         _game.Keyboard.Disable(Key.Right);
 
-        DeathSounds[3].Play();
+        Resources.PlayerDeath.Play();
         _game.MessageDisplay.Add("Hävisit pelin :(");
         _game.StopAll();
         _game.ClearTimers();
