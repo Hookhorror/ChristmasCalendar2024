@@ -4,12 +4,18 @@ using Jypeli.Widgets;
 
 public class CatchGifts : LidContentInterface
 {
-    private const double DropSpeed = -200;
-    private readonly ChristmasCalendar2024 _game;
     private static readonly string HighScorePath = "CatchGiftsHighScore.xml";
-    private ScoreList _highScore = new ScoreList(10, false, 0);
+    private static readonly double[] ItemSpeeds = { -250, -150, -175, -200, -225 };
+    private static readonly int[,] DropRates = {{5,50,30,10,5}
+                                               ,{5,40,30,15,10}
+                                               ,{10,35,25,15,15}
+                                               ,{15,30,20,15,20}
+                                               ,{20,20,20,20,20}};
     private readonly IntMeter _points = new IntMeter(0);
+    private ScoreList _highScore = new ScoreList(10, false, 0);
+    private readonly ChristmasCalendar2024 _game;
     private PlatformCharacter _player;
+    private int _difficulty = 1;
 
     public CatchGifts(ChristmasCalendar2024 game)
     {
@@ -49,7 +55,7 @@ public class CatchGifts : LidContentInterface
     {
         _player = new PlatformCharacter(100, 100);
         _player.Image = Resources.Toy;
-        _player.Shape = Resources.ToyShape;
+        // _player.Shape = Resources.ToyShape;
         _player.Position = new Vector(_game.Level.Center.X, _game.Level.Bottom);
         _player.CanRotate = false;
         _player.Tag = "player";
@@ -67,16 +73,13 @@ public class CatchGifts : LidContentInterface
 
         PhysicsObject bottom = _game.Level.CreateBottomBorder();
         bottom.Color = Color.White;
+        bottom.Tag = "BottomBorder";
         PhysicsObject leftBorder = _game.Level.CreateLeftBorder();
         leftBorder.Image = Resources.Pillar;
         PhysicsObject rightBorder = _game.Level.CreateRightBorder();
         rightBorder.Image = Resources.Pillar;
-        // TODO tidy borders up
 
         _game.Camera.ZoomToLevel(50);
-        // _game.Camera.ZoomToAllObjects();
-
-        // _game.Gravity = Vector.UnitY * -1000;
     }
 
     private void AddTimers()
@@ -85,12 +88,30 @@ public class CatchGifts : LidContentInterface
         itemDrop.Interval = 2;
         itemDrop.Timeout += AddItems;
         itemDrop.Start();
+
+        Timer increaseDifficulty = new Timer();
+        increaseDifficulty.Interval = 5;
+        increaseDifficulty.Timeout += RaiseDifficulty;
+        increaseDifficulty.Start();
+    }
+
+    private void RaiseDifficulty()
+    {
+        if (_difficulty < DropRates.GetLength(0))
+        {
+            _difficulty++;
+        }
     }
 
     private void AddItems()
     {
         // TODO multiple items
-        AddItem();
+        int random = (RandomGen.NextInt(_difficulty) + 1) * 2;
+
+        for (int i = 0; i < random; i++)
+        {
+            AddItem();
+        }
     }
 
     private void AddItem()
@@ -103,17 +124,27 @@ public class CatchGifts : LidContentInterface
 
     private PhysicsObject CreateRandomItem()
     {
-        // Shape[] shapes = { Shape.Diamond, Shape.Rectangle, Shape.Triangle, Shape.Hexagon };
         PhysicsObject item = new PhysicsObject(50, 50);
         item.Y = _game.Level.Top + 100;
         item.X = RandomGen.NextDouble(_game.Level.Left + 50, _game.Level.Right - 50);
         item.Color = Color.White;
-        item.Velocity = Vector.UnitY * DropSpeed;
-
-        int image = RandomGen.NextInt(Resources.GiftImages.Length);
-        item.Image = Resources.GiftImages[image];
-        item.Shape = Resources.GiftShapes[image];
         item.Mass = 0.1;
+        item.CollisionIgnoreGroup = 1;
+
+        int random = RandomGen.NextInt(100);
+        int chance = 0;
+        for (int i = 0; i < DropRates.GetLength(1); i++)
+        {
+            chance += DropRates[_difficulty - 1, i];
+            if (random < chance)
+            {
+                // TODO following coals
+                item.Image = Resources.GiftImages[i];
+                item.Shape = Resources.GiftShapes[i];
+                item.Velocity = Vector.UnitY * ItemSpeeds[i];
+                break;
+            }
+        }
 
         return item;
     }
@@ -133,22 +164,20 @@ public class CatchGifts : LidContentInterface
         {
             if (collider.Image.Equals(Resources.GiftImages[i]))
             {
-                // TODO add sound
                 if (i == 0)
                 {
                     GameOver();
                     return;
                 }
                 _points.Value += i;
+                Resources.CatchGiftsSounds[i - 1].Play();
                 return;
             }
         }
-        // TODO Add coals
     }
 
     private void GameOver()
     {
-        // TODO Game over
         Resources.PlayerDeath.Play();
         _game.MessageDisplay.Add("Hävisit pelin :(");
         _game.StopAll();
