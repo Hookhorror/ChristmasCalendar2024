@@ -4,18 +4,21 @@ using Jypeli.Widgets;
 
 public class CatchGifts : LidContentInterface
 {
+    private const double DifficultyTime = 30;
+    public const double DropTime = 2;
     private static readonly string HighScorePath = "CatchGiftsHighScore.xml";
     private static readonly double[] ItemSpeeds = { -250, -150, -175, -200, -225 };
     private static readonly int[,] DropRates = {{5,50,30,10,5}
-                                               ,{5,40,30,15,10}
-                                               ,{10,35,25,15,15}
-                                               ,{15,30,20,15,20}
-                                               ,{20,20,20,20,20}};
+                                               ,{10,40,25,15,10}
+                                               ,{20,30,20,15,15}
+                                               ,{30,25,15,15,15}
+                                               ,{40,15,15,15,15}};
     private readonly IntMeter _points = new IntMeter(0);
     private ScoreList _highScore = new ScoreList(10, false, 0);
     private readonly ChristmasCalendar2024 _game;
     private PlatformCharacter _player;
-    private int _difficulty = 1;
+    private int _difficulty;
+
 
     public CatchGifts(ChristmasCalendar2024 game)
     {
@@ -31,6 +34,7 @@ public class CatchGifts : LidContentInterface
     {
         _game.ClearAll();
 
+        _difficulty = 1;
         AddLevel();
         AddPlayer();
         AddControls();
@@ -85,12 +89,12 @@ public class CatchGifts : LidContentInterface
     private void AddTimers()
     {
         Timer itemDrop = new Timer();
-        itemDrop.Interval = 2;
+        itemDrop.Interval = DropTime;
         itemDrop.Timeout += AddItems;
         itemDrop.Start();
 
         Timer increaseDifficulty = new Timer();
-        increaseDifficulty.Interval = 5;
+        increaseDifficulty.Interval = DifficultyTime;
         increaseDifficulty.Timeout += RaiseDifficulty;
         increaseDifficulty.Start();
     }
@@ -105,8 +109,7 @@ public class CatchGifts : LidContentInterface
 
     private void AddItems()
     {
-        // TODO multiple items
-        int random = (RandomGen.NextInt(_difficulty) + 1) * 2;
+        int random = RandomGen.NextInt(_difficulty) + 1;
 
         for (int i = 0; i < random; i++)
         {
@@ -125,7 +128,7 @@ public class CatchGifts : LidContentInterface
     private PhysicsObject CreateRandomItem()
     {
         PhysicsObject item = new PhysicsObject(50, 50);
-        item.Y = _game.Level.Top + 100;
+        item.Y = _game.Level.Top + 100 + RandomGen.NextInt(300);
         item.X = RandomGen.NextDouble(_game.Level.Left + 50, _game.Level.Right - 50);
         item.Color = Color.White;
         item.Mass = 0.1;
@@ -138,15 +141,32 @@ public class CatchGifts : LidContentInterface
             chance += DropRates[_difficulty - 1, i];
             if (random < chance)
             {
-                // TODO following coals
                 item.Image = Resources.GiftImages[i];
                 item.Shape = Resources.GiftShapes[i];
                 item.Velocity = Vector.UnitY * ItemSpeeds[i];
+
+                if (i == 0) // Coal
+                {
+                    Timer followPlayer = new Timer();
+                    followPlayer.Interval = 0.1;
+                    followPlayer.Timeout += () => FollowPlayer(item);
+                    followPlayer.Start();
+
+                    item.Destroyed += () => followPlayer = null;
+                }
+
                 break;
             }
         }
 
         return item;
+    }
+
+    private void FollowPlayer(PhysicsObject follower)
+    {
+        Vector direction = _player.Position - follower.Position;
+        int sign = Math.Sign(direction.X);
+        follower.Velocity += Vector.UnitX * sign * _difficulty;
     }
 
     private void ItemCollision(PhysicsObject collider, PhysicsObject target)
@@ -178,6 +198,11 @@ public class CatchGifts : LidContentInterface
 
     private void GameOver()
     {
+        _game.Keyboard.Disable(Key.A);
+        _game.Keyboard.Disable(Key.D);
+        _game.Keyboard.Disable(Key.Left);
+        _game.Keyboard.Disable(Key.Right);
+
         Resources.PlayerDeath.Play();
         _game.MessageDisplay.Add("Hävisit pelin :(");
         _game.StopAll();
