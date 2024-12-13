@@ -75,13 +75,21 @@ public class CatchGifts : LidContentInterface
         _game.Level.Background.Color = Color.SeaGreen;
         _game.Level.Size = new Vector(1024, 1024);
 
+        PhysicsObject leftBorder = _game.Level.CreateLeftBorder();
+        leftBorder.Image = Resources.Pillar;
+
+        PhysicsObject rightBorder = _game.Level.CreateRightBorder();
+        rightBorder.Image = Resources.Pillar;
+
         PhysicsObject bottom = _game.Level.CreateBottomBorder();
         bottom.Color = Color.White;
         bottom.Tag = "BottomBorder";
-        PhysicsObject leftBorder = _game.Level.CreateLeftBorder();
-        leftBorder.Image = Resources.Pillar;
-        PhysicsObject rightBorder = _game.Level.CreateRightBorder();
-        rightBorder.Image = Resources.Pillar;
+        bottom.CollisionIgnoreGroup = 1;
+
+        PhysicsObject itemBumber = PhysicsObject.CreateStaticObject(bottom.Width, 1);
+        itemBumber.Position = bottom.Position;
+        itemBumber.IsVisible = false;
+        _game.Add(itemBumber);
 
         _game.Camera.ZoomToLevel(50);
     }
@@ -122,7 +130,7 @@ public class CatchGifts : LidContentInterface
         PhysicsObject item = CreateRandomItem();
         _game.AddCollisionHandler(item, ItemCollision);
 
-        _game.Add(item);
+        _game.Add(item, -1);
     }
 
     private PhysicsObject CreateRandomItem()
@@ -261,7 +269,6 @@ public class CatchGifts : LidContentInterface
         pauseMenu.AddItemHandler(3, _game.InitCalendar);
         pauseMenu.AddItemHandler(4, _game.Exit);
     }
-
 
     private void ShowHighScores()
     {
