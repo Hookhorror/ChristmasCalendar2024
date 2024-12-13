@@ -25,7 +25,7 @@ class CalendarLid : GameObject
         this.Add(lidText);
     }
 
-    public void Open()
+    public void Open(bool silently = false)
     {
         if (CanYouOpen())
         {
@@ -34,7 +34,10 @@ class CalendarLid : GameObject
             {
                 Opened = true;
                 LidOpening.Start();
-                CreakingDoor.Play();
+                if (!silently)
+                {
+                    CreakingDoor.Play();
+                }
             }
         }
         // TODO Image for game

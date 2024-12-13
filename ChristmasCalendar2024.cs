@@ -1,3 +1,4 @@
+using System;
 using Jypeli;
 
 
@@ -5,6 +6,7 @@ public class ChristmasCalendar2024 : PhysicsGame
 {
     private readonly CalendarLid[] calendarLids = new CalendarLid[24];
     private readonly LidContentInterface[] content = new LidContentInterface[24];
+    private readonly bool[] OpenedLids = new bool[24];
 
     public override void Begin()
     {
@@ -38,13 +40,16 @@ public class ChristmasCalendar2024 : PhysicsGame
         {
             CalendarLid cl = new CalendarLid(sideLength, sideLength, i + 1);
             calendarLids[i] = cl;
+
+            if (OpenedLids[i]) cl.Open(true);
+
             if (content[i] != null)
             {
                 LidContentInterface game = content[i];
 
                 Mouse.ListenOn(calendarLids[i], MouseButton.Left, ButtonState.Pressed, () => StartGame(game, cl), null);
             }
-            Mouse.ListenOn(cl, MouseButton.Left, ButtonState.Pressed, cl.Open, null);
+            Mouse.ListenOn(cl, MouseButton.Left, ButtonState.Pressed, () => HandleOpen(cl), null);
         }
 
         SuffleLids();
@@ -52,6 +57,12 @@ public class ChristmasCalendar2024 : PhysicsGame
 
         AddControls();
         Camera.ZoomToAllObjects(50);
+    }
+
+    private void HandleOpen(CalendarLid cl)
+    {
+        cl.Open();
+        OpenedLids[cl.lidNumber - 1] = true;
     }
 
     private void StartGame(LidContentInterface game, CalendarLid cl)
