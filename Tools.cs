@@ -69,4 +69,14 @@ public class Tools
 
         return shapes;
     }
+
+    public static GameObject AddRedDot(Game game, Vector position)
+    {
+        GameObject dot = new GameObject(10, 10, Shape.Ellipse);
+        dot.Color = Color.Red;
+        dot.Position = position;
+        game.Add(dot);
+
+        return dot;
+    }
 }
