@@ -6,13 +6,16 @@ class DodgeTheWalls : LidContentInterface
 {
     private ChristmasCalendar2024 _game;
     private PhysicsObject _player;
-    private ScoreList _highScore;
-    private double _points;
+    private ScoreList _highScore = new ScoreList(10, false, 0);
+    private Timer _time;
+    private Timer hexTimer;
+    private bool _gameOver;
+    private string _highScorePath = "DodgeTheWallsHighScore.xml";
+    private double _difficulty = 0;
+    private const double SpawnTime = 5.0;
+    private const double MaxDifficult = 2.0;
 
     // TODO More hexagons
-    // TODO Add points
-    // TODO Shrink hexagons
-    // TODO collision with hexagons
 
     public DodgeTheWalls(ChristmasCalendar2024 game)
     {
@@ -27,18 +30,82 @@ class DodgeTheWalls : LidContentInterface
     private void InitGame()
     {
         _game.ClearAll();
+        _gameOver = false;
+        _game.Level.BackgroundColor = Color.Black;
 
-        CreateHexagon();
+
         AddPlayer();
+        CreateHexagon();
         AddControls();
+        StartTimers();
+    }
+
+    private void StartTimers()
+    {
+        _time = new Timer(1.0);
+        Label timeLabel = new Label();
+        timeLabel.TextColor = Color.White;
+        timeLabel.Position = new Vector(_game.Level.Center.X, _game.Level.Top - 100);
+        timeLabel.DecimalPlaces = 2;
+        timeLabel.BindTo(_time.SecondCounter);
+        _game.Add(timeLabel);
+        _time.Start();
+
+        hexTimer = new Timer(SpawnTime, CreateHexagon);
+        hexTimer.Start();
+
+        Timer increaseDifficulty = new Timer(6);
+        increaseDifficulty.Timeout += () => IncreaseDifficulty(hexTimer);
+        increaseDifficulty.Start();
+    }
+
+    private void IncreaseDifficulty(Timer hexTimer)
+    {
+        if (_difficulty < MaxDifficult)
+        {
+            _difficulty += 0.05;
+            hexTimer.Interval = SpawnTime - _difficulty;
+        }
     }
 
     private void AddPlayer()
     {
-        _player = new PhysicsObject(50, 50);
+        _player = new PhysicsObject(20, 20);
         _player.Shape = Shape.Circle;
-        _player.Color = Color.Red;
+        _player.Color = Color.White;
+        _player.Collided += Collision;
+
         _game.Add(_player);
+    }
+
+    private void Collision(IPhysicsObject collidingObject, IPhysicsObject otherObject)
+    {
+        if (!_gameOver)
+        {
+            GameOver();
+        }
+    }
+
+    private void GameOver()
+    {
+        _gameOver = true;
+
+        _game.Keyboard.Disable(Key.W);
+        _game.Keyboard.Disable(Key.A);
+        _game.Keyboard.Disable(Key.S);
+        _game.Keyboard.Disable(Key.D);
+        _game.Keyboard.Disable(Key.Left);
+        _game.Keyboard.Disable(Key.Up);
+        _game.Keyboard.Disable(Key.Down);
+        _game.Keyboard.Disable(Key.Right);
+        _game.Mouse.Disable(MouseButton.Left);
+
+        Resources.PlayerDeath.Play();
+        _game.MessageDisplay.Add("Hävisit pelin :(");
+        _game.StopAll();
+        _game.ClearTimers();
+
+        NewHighScores();
     }
 
     private void AddControls()
@@ -62,6 +129,24 @@ class DodgeTheWalls : LidContentInterface
         _game.Keyboard.Listen(Key.A, ButtonState.Released, _player.Stop, null);
         _game.Keyboard.Listen(Key.Left, ButtonState.Down, MovePlayer, "Liike vasemmalle", new Vector(-1, 0));
         _game.Keyboard.Listen(Key.Left, ButtonState.Released, _player.Stop, null);
+
+        // TODO moving with mouse
+        _game.Mouse.Listen(MouseButton.Left, ButtonState.Down, MovePlayer, "Liike kohti hiiren osoitinta", Vector.Zero);
+        _game.Mouse.Listen(MouseButton.Left, ButtonState.Released, _player.Stop, null);
+    }
+
+    private Vector CalculateDirection()
+    {
+        Vector mousePos = _game.Mouse.PositionOnWorld;
+        Vector playerPos = _player.Position;
+        Vector direction = mousePos - playerPos;
+
+        if (direction.Magnitude < 5)
+        {
+            return Vector.Zero;
+        }
+
+        return direction.Normalize();
     }
 
     private void OpenMenu()
@@ -84,7 +169,7 @@ class DodgeTheWalls : LidContentInterface
 
     private void ShowHighScores()
     {
-        _highScore = Game.DataStorage.TryLoad<ScoreList>(_highScore, "SnowmanDefenceHighScore.xml");
+        _highScore = Game.DataStorage.TryLoad<ScoreList>(_highScore, _highScorePath);
 
         HighScoreWindow window = new HighScoreWindow("Parhaat pisteet", _highScore);
         window.Closed += delegate { OpenMenu(); };
@@ -94,16 +179,16 @@ class DodgeTheWalls : LidContentInterface
     // TODO Game over
     private void NewHighScores()
     {
-        _highScore = Game.DataStorage.TryLoad<ScoreList>(_highScore, "SnowmanDefenceHighScore.xml");
+        _highScore = Game.DataStorage.TryLoad<ScoreList>(_highScore, _highScorePath);
 
         HighScoreWindow w = new HighScoreWindow("Parhaat pisteet"
-            , "Onneksi olkoon, pääsit listalle pisteillä %p! Syötä nimesi:", _highScore, _points);
+            , "Onneksi olkoon, pääsit listalle pisteillä %p! Syötä nimesi:", _highScore, _time.SecondCounter.Value);
         w.Closed += SaveHighScore;
         w.Closed += delegate { OpenMenu(); }; // TODO Maybe do both in single Closed event?
         _game.Add(w);
     }
 
-    private void SaveHighScore(Window sender) => Game.DataStorage.Save<ScoreList>(_highScore, "SnowmanDefenceHighScore.xml");
+    private void SaveHighScore(Window sender) => Game.DataStorage.Save<ScoreList>(_highScore, _highScorePath);
 
 
     private void MovePlayer(Vector direction)
@@ -130,6 +215,11 @@ class DodgeTheWalls : LidContentInterface
             _player.Velocity = new Vector(1, 1).Normalize() * speed;
             return;
         }
+        if (_game.Mouse.CurrentState.LeftButton)
+        {
+            _player.Velocity = CalculateDirection() * speed;
+            return;
+        }
 
         _player.Velocity = direction * speed;
     }
@@ -143,90 +233,11 @@ class DodgeTheWalls : LidContentInterface
     /// <param name="color">The color of the hexagon vertices and edges.</param>
     public void CreateHexagon()
     {
-        // TODO make hexagon object
-        double radius = 500;
-        GameObject hexagon = new GameObject(radius * 2, radius * 2);
-        hexagon.Color = Color.White;
-        PhysicsObject[] vertices = new PhysicsObject[6];
-        Vector center = Vector.Zero;
-        double vertexSize = 5;
-        Color color = RandomGen.NextColor();
-        int sides = 6;
+        double radius = 1000;
+        Hexagon hexagon = new Hexagon(radius * 2, radius * 2, 5);
 
-        for (int i = 0; i < sides; i++)
-        {
-            // Calculate the angle for each vertex (60-degree increments)
-            double angle = i * 60 * Math.PI / 180;
-
-            // Calculate the position of the vertex
-            double x = center.X + radius * Math.Cos(angle);
-            double y = center.Y + radius * Math.Sin(angle);
-            Vector vertexPosition = new Vector(x, y);
-
-            PhysicsObject vertex = new PhysicsObject(vertexSize, vertexSize);
-            vertex.Color = color;
-            vertex.Shape = Shape.Circle;
-            vertex.Position = vertexPosition;
-            vertex.IgnoresCollisionResponse = true;
-
-            hexagon.Add(vertex);
-            vertices[i] = vertex;
-        }
-
-        // Connect the vertices with lines to form edges
-        for (int i = 0; i < sides - 1; i++)
-        {
-            PhysicsObject start = vertices[i];
-            PhysicsObject end = vertices[(i + 1) % 6];
-            PhysicsObject edge = CreateEdge(start.Position, end.Position, color, vertexSize);
-            edge.IgnoresCollisionResponse = true;
-            hexagon.Add(edge);
-        }
-        // hexagon.IgnoresCollisionResponse = true;
-        ShrinkTimer(hexagon);
-        _game.Add(hexagon);
-    }
-
-    private void ShrinkTimer(GameObject hexagon)
-    {
-        Timer shrinkTimer = new Timer(0.1);
-        shrinkTimer.Timeout += () => ShrinkHexagon(hexagon);
-        shrinkTimer.Start();
-
-        hexagon.Destroyed += () => shrinkTimer = null;
-    }
-
-    private void ShrinkHexagon(GameObject hexagon)
-    {
-        // hexagon.Width = 200;
-        // hexagon.Height = 200;
-        hexagon.Size *= 0.99;
-        foreach (var item in hexagon.GetChildObjectList)
-        {
-            item.Size *= 0.99;
-            item.Position *= 0.99;
-        }
-
-        if (hexagon.Width < 100)
-        {
-            hexagon.Destroy();
-        }
-    }
-
-    /// <summary>
-    /// Creates an edge between two points using a visual line.
-    /// </summary>
-    /// <param name="start">The starting position of the edge.</param>
-    /// <param name="end">The ending position of the edge.</param>
-    /// <param name="color">The color of the edge.</param>
-    private PhysicsObject CreateEdge(Vector start, Vector end, Color color, double thickness)
-    {
-        PhysicsObject edge = new PhysicsObject(thickness, (end - start).Magnitude);
-        edge.Color = color;
-        edge.Position = (start + end) / 2; // Midpoint of the edge
-        // TODO clean formula
-        edge.Angle = (end - start).Angle + Angle.FromDegrees(90);
-
-        return edge;
+        hexagon.Shrink(0.1, 0.99, _player.Width);
+        hexagon.RemoveRandomEdge();
+        hexagon.AddToGame(_game);
     }
 }
