@@ -40,7 +40,10 @@ public class ChristmasCalendar2024 : PhysicsGame
         content[17] = new StoryPlayer(this, "Kettu ja korppi");
         content[18] = new StoryPlayer(this, "Kettu ja rypäleet");
         content[19] = new StoryPlayer(this, "Kettu ja haikara");
-        content[20] = new DodgeTheWalls(this);
+        content[20] = new StoryPlayer(this, "Heinäsirkka ja muurahaiset");
+        content[21] = new StoryPlayer(this, "Jänis ja kilpikonna");
+        content[22] = new StoryPlayer(this, "Hevonen ja ratsastaja");
+        content[23] = new DodgeTheWalls(this);
 
         double sideLength = 100;
         for (int i = 0; i < calendarLids.Length; i++)
