@@ -110,7 +110,13 @@ public class StoryPlayer : LidContentInterface
         _game.Add(pauseMenu);
 
         pauseMenu.Closed += (handler) => _game.Pause();
-        pauseMenu.AddItemHandler(1, _game.InitCalendar); // TODO make better init calendar method
+        pauseMenu.AddItemHandler(1, ExitStoryPlayer); // TODO make better init calendar method
         pauseMenu.AddItemHandler(2, _game.Exit);
+    }
+
+    private void ExitStoryPlayer()
+    {
+        Stop();
+        _game.InitCalendar();
     }
 }
