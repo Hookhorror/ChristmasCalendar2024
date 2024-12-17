@@ -33,7 +33,6 @@ class DodgeTheWalls : LidContentInterface
         _gameOver = false;
         _game.Level.BackgroundColor = Color.Black;
 
-
         AddPlayer();
         CreateHexagon();
         AddControls();
@@ -54,7 +53,7 @@ class DodgeTheWalls : LidContentInterface
         hexTimer = new Timer(SpawnTime, CreateHexagon);
         hexTimer.Start();
 
-        Timer increaseDifficulty = new Timer(6);
+        Timer increaseDifficulty = new Timer(4);
         increaseDifficulty.Timeout += () => IncreaseDifficulty(hexTimer);
         increaseDifficulty.Start();
     }
