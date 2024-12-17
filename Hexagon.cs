@@ -5,17 +5,17 @@ class Hexagon : GameObject
 {
     private readonly PhysicsObject[] edges = new PhysicsObject[6];
     private readonly PhysicsObject[] vertices = new PhysicsObject[6];
-    private double radius;
-    private double edgeWidth;
+    private double _radius;
+    private double _edgeWidth;
     private Color _color;
 
     public Hexagon(double width, double height, double edgeWidth) : base(width, height)
     {
         Width = width;
         Height = height;
-        radius = width / 2;
-        this.edgeWidth = edgeWidth;
-        this.IsVisible = false;
+        _radius = width / 2;
+        _edgeWidth = edgeWidth;
+        IsVisible = false;
         _color = RandomGen.NextColor();
 
         CreateVertices();
@@ -45,11 +45,11 @@ class Hexagon : GameObject
             double angle = i * 60 * Math.PI / 180 + Math.PI / 2;
 
             // Calculate the position of the vertex
-            double x = Position.X + radius * Math.Cos(angle);
-            double y = Position.Y + radius * Math.Sin(angle);
+            double x = Position.X + _radius * Math.Cos(angle);
+            double y = Position.Y + _radius * Math.Sin(angle);
             Vector vertexPosition = new Vector(x, y);
 
-            PhysicsObject vertex = new PhysicsObject(edgeWidth, edgeWidth);
+            PhysicsObject vertex = new PhysicsObject(_edgeWidth, _edgeWidth);
             // vertex.Color = color;
             vertex.Shape = Shape.Circle;
             vertex.Position = vertexPosition;
@@ -73,7 +73,7 @@ class Hexagon : GameObject
 
     private PhysicsObject CreateEdge(Vector start, Vector end)
     {
-        PhysicsObject edge = new PhysicsObject(edgeWidth, (end - start).Magnitude);
+        PhysicsObject edge = new PhysicsObject(_edgeWidth, (end - start).Magnitude);
         edge.Position = (start + end) / 2; // Midpoint of the edge
         // TODO clean formula
         edge.Angle = (end - start).Angle + Angle.FromDegrees(90);
