@@ -16,6 +16,7 @@ public class ChristmasCalendar2024 : PhysicsGame
     public void InitCalendar()
     {
         ClearAll();
+        MediaPlayer.Stop();
         MasterVolume = 0.5;
         Level.BackgroundColor = Color.Black;
         Level.Background.Image = Resources.ChristmasTree;

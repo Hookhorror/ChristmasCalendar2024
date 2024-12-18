@@ -124,19 +124,9 @@ class ClickingGame : LidContentInterface
         _game.ClearAll();
         _game.Level.Size = new Vector(Game.Screen.Width - 100, Game.Screen.Height - 100);
         AddUI();
-        AddInstructions();
+        Tools.AddTempInstructions(_game, 4.5, "Klikkaa paketteja niin saat pisteitä ja elämiä!");
         StartTimers();
         AddControls();
-    }
-
-    private void AddInstructions()
-    {
-        Label instructions = new Label("Klikkaa paketteja niin saat pisteitä ja elämiä!");
-        instructions.TextColor = Color.White;
-
-        _game.Add(instructions);
-
-        Timer.SingleShot(4.5, instructions.Destroy);
     }
 
     private void AddControls()

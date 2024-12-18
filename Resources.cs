@@ -5,6 +5,7 @@ public class Resources
     public static readonly SoundEffect[] ClickingGameSounds = Game.LoadSoundEffects("Tap", "Spring", "Pig", "Sheep");
     public static readonly SoundEffect[] CatchGiftsSounds = Game.LoadSoundEffects("Plop", "CoinDrop", "MagicSparkle", "JingleBell");
     public static readonly SoundEffect PlayerDeath = Game.LoadSoundEffect("Fail");
+    public static readonly SoundEffect CasualArcade1 = Game.LoadSoundEffect("Casual Arcade Track #2 (looped)");
     public static readonly Image Toy = Game.LoadImage("Toy1");
     public static readonly Shape ToyShape = Shape.FromImage(Toy);
     public static readonly Image[] ToyImages = Game.LoadImages("Toy1", "Toy2", "Toy3");

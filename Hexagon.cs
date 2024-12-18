@@ -16,10 +16,23 @@ class Hexagon : GameObject
         _radius = width / 2;
         _edgeWidth = edgeWidth;
         IsVisible = false;
-        _color = RandomGen.NextColor();
+        _color = RandomColor();
 
         CreateVertices();
         CreateEdges();
+    }
+
+    private Color RandomColor()
+    {
+        Color color;
+
+        do
+        {
+            color = RandomGen.NextColor();
+        } while (color.Equals(Color.Black));
+        // TODO check game's background color
+
+        return color;
     }
 
     public void AddToGame(Game game)
@@ -85,13 +98,13 @@ class Hexagon : GameObject
     internal void Shrink(double speed, double amount, double until)
     {
         Timer shrinkTimer = new Timer(speed);
-        shrinkTimer.Timeout += () => Shrink(amount, until);
+        shrinkTimer.Timeout += () => ReduceSize(amount, until);
         shrinkTimer.Start();
 
         Destroyed += () => shrinkTimer = null;
     }
 
-    private void Shrink(double amount, double until)
+    private void ReduceSize(double amount, double until)
     {
         if (Width < until)
         {

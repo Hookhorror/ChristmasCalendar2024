@@ -79,4 +79,16 @@ public class Tools
 
         return dot;
     }
+
+    public static Label AddTempInstructions(Game game, double time, string text)
+    {
+        Label instructions = new Label(text);
+        instructions.TextColor = Color.White;
+
+        game.Add(instructions);
+
+        Timer.SingleShot(time, instructions.Destroy);
+
+        return instructions;
+    }
 }

@@ -15,7 +15,6 @@ class DodgeTheWalls : LidContentInterface
     private const double SpawnTime = 5.0;
     private const double MaxDifficult = 2.0;
 
-    // TODO More hexagons
 
     public DodgeTheWalls(ChristmasCalendar2024 game)
     {
@@ -32,11 +31,20 @@ class DodgeTheWalls : LidContentInterface
         _game.ClearAll();
         _gameOver = false;
         _game.Level.BackgroundColor = Color.Black;
+        AddMusic();
 
         AddPlayer();
         CreateHexagon();
+        Tools.AddTempInstructions(_game, 5, "Väistele seiniä!\nVoit ohjata joko hiirellä tai näppäimistöllä.");
         AddControls();
         StartTimers();
+    }
+
+    private void AddMusic()
+    {
+        Game.MasterVolume = 0.15;
+        _game.MediaPlayer.Play(Resources.CasualArcade1);
+        _game.MediaPlayer.IsRepeating = true;
     }
 
     private void StartTimers()
@@ -53,7 +61,7 @@ class DodgeTheWalls : LidContentInterface
         hexTimer = new Timer(SpawnTime, CreateHexagon);
         hexTimer.Start();
 
-        Timer increaseDifficulty = new Timer(4);
+        Timer increaseDifficulty = new Timer(5.0);
         increaseDifficulty.Timeout += () => IncreaseDifficulty(hexTimer);
         increaseDifficulty.Start();
     }
@@ -88,6 +96,7 @@ class DodgeTheWalls : LidContentInterface
     private void GameOver()
     {
         _gameOver = true;
+        _game.MediaPlayer.Stop();
 
         _game.Keyboard.Disable(Key.W);
         _game.Keyboard.Disable(Key.A);
@@ -129,7 +138,6 @@ class DodgeTheWalls : LidContentInterface
         _game.Keyboard.Listen(Key.Left, ButtonState.Down, MovePlayer, "Liike vasemmalle", new Vector(-1, 0));
         _game.Keyboard.Listen(Key.Left, ButtonState.Released, _player.Stop, null);
 
-        // TODO moving with mouse
         _game.Mouse.Listen(MouseButton.Left, ButtonState.Down, MovePlayer, "Liike kohti hiiren osoitinta", Vector.Zero);
         _game.Mouse.Listen(MouseButton.Left, ButtonState.Released, _player.Stop, null);
     }
@@ -150,20 +158,38 @@ class DodgeTheWalls : LidContentInterface
 
     private void OpenMenu()
     {
-        if (_game.IsPaused)
-        {
-            _game.Pause();
-            return;
-        }
+        // if (_game.IsPaused)
+        // {
+        //     _game.Pause();
+        //     return;
+        // }
         _game.Pause();
+        _game.MediaPlayer.Pause();
         MultiSelectWindow pauseMenu = new MultiSelectWindow("Pause", "Jatka peliä", "Aloita alusta", "Parhaat pisteet", "Kalenteriin", "Lopeta");
         _game.Add(pauseMenu);
 
-        pauseMenu.Closed += (handler) => _game.Pause();
+        pauseMenu.Closed += CloseMenu;
+        // pauseMenu.Closed += (handler) => _game.Pause();
         pauseMenu.AddItemHandler(1, InitGame);
         pauseMenu.AddItemHandler(2, ShowHighScores);
-        pauseMenu.AddItemHandler(3, _game.InitCalendar);
+        pauseMenu.AddItemHandler(3, ExitGame);
         pauseMenu.AddItemHandler(4, _game.Exit);
+    }
+
+    private void CloseMenu(Window _)
+    {
+        _game.Pause();
+        if (!_gameOver)
+        {
+            _game.MediaPlayer.Resume();
+        }
+    }
+
+    private void ExitGame()
+    {
+        _game.MediaPlayer.IsRepeating = false;
+        _game.MediaPlayer.Stop();
+        _game.InitCalendar();
     }
 
     private void ShowHighScores()
@@ -175,7 +201,6 @@ class DodgeTheWalls : LidContentInterface
         _game.Add(window);
     }
 
-    // TODO Game over
     private void NewHighScores()
     {
         _highScore = Game.DataStorage.TryLoad<ScoreList>(_highScore, _highScorePath);
